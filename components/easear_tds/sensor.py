@@ -14,7 +14,6 @@ from esphome.const import (
 )
 
 CONF_SOURCE_TDS = "source_tds"
-CONF_CLEAN_TDS = "clean_tds"
 
 DEPENDENCIES = ["uart"]
 

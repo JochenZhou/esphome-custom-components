@@ -21,8 +21,8 @@ void EASEARTDSComponent::update() {
 
 void EASEARTDSComponent::loop() {
         uint8_t checkcode=0;
-        int shuizhi_val=0;
-        int wendu_val=0;
+        float shuizhi_val=0;
+        float wendu_val=0;
         static int last_read_time=0;
         // 如果UART缓冲区中有数据，则取出第一个字节
         while (available() > 0)  
@@ -56,14 +56,14 @@ void EASEARTDSComponent::loop() {
                 continue;
             }
             //直接得出的是10倍的参数，在esphome中将其转换正常参数的浮点值
-            shuizhi_val = bytes[5] + bytes[4] * 256;
-            wendu_val = bytes[7] + bytes[6] * 256;
+            shuizhi_val = (bytes[5] + bytes[4] * 256)*0.1*0.47; // TDS=电导率*0.47
+            wendu_val = (bytes[7] + bytes[6] * 256)*0.1;
             // ESP_LOGI("custom", "水质原始值=%d,温度原始值=%d",shuizhi_val,wendu_val);
             if (shuizhi_val>=0 && shuizhi_val<=20000 && wendu_val>=0 && wendu_val<=999) //电导率(0-2000),温度(0-99) 判断范围需要扩大10倍
             {
                 // 发布shuizhi和wendu的值
-                shuizhi->publish_state(source_tds);
-                wendu->publish_state(temperature); 
+                source_tds_sensor_->publish_state(shuizhi_val);
+                temperature_sensor_->publish_state(wendu_val); 
             }
             // 清空bytes数组
             bytes.clear();
