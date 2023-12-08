@@ -1,4 +1,4 @@
-#include "ssw_tds.h"
+#include "easear_tds.h"
 #include "esphome/core/log.h"
 #include <cstring>
 
