@@ -43,7 +43,7 @@ CONFIG_SCHEMA = cv.All(
             ),
         }
     )
-    .extend(cv.polling_component_schema("5s"))
+    .extend(cv.polling_component_schema("10s"))
     .extend(uart.UART_DEVICE_SCHEMA)
 )
 
