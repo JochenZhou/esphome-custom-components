@@ -29,3 +29,6 @@ sensor:
       name: "Water Temperature" #水温
     update_interval: 5s # 可选，更新间隔默认5s
 ```
+## Reference
+
+- [ryanh7/esphome-custom-components](https://github.com/ryanh7/esphome-custom-components)
