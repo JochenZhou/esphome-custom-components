@@ -6,7 +6,7 @@ esphome的一些新增组件支持
 #引用组件库示例
 external_components:
   - source: github://JochenZhou/esphome-custom-components
-    components: [ example ]
+    components: [ easear_tds ]
 ```
 
 ## 组件列表
