@@ -12,7 +12,7 @@ external_components:
 ## 组件列表
 
 * easear_tds
-> 一款基于urat协议的2路带水温tds检测模块。可输出双路tds及双路水温，目前只可用一路。
+> 一款基于urat协议的2路带水温tds检测模块。可输出双路tds及双路水温，目前只配置了一路。
 ```yaml
 #配置示例
 uart:
