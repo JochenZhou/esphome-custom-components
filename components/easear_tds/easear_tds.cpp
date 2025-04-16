@@ -1,6 +1,5 @@
 #include "easear_tds.h"
 #include "esphome/core/log.h"
-#include <cstring>
 
 namespace esphome {
 namespace easear_tds {
@@ -8,72 +7,67 @@ namespace easear_tds {
 static const char *const TAG = "easear_tds";
 
 void EASEARTDSComponent::dump_config() {
-  ESP_LOGCONFIG(TAG, "easear_tds:");
-  this->check_uart_settings(9600);
-  LOG_SENSOR("  ", "Source TDS", this->source_tds_sensor_);
-  LOG_SENSOR("  ", "Temperature TDS", this->temperature_sensor_);
+  ESP_LOGCONFIG(TAG, "EASEAR TDS Sensor:");
+  LOG_SENSOR("  ", "TDS Channel 1", source_tds_1_);
+  LOG_SENSOR("  ", "Temperature Channel 1", temperature_1_);
+  LOG_SENSOR("  ", "TDS Channel 2", source_tds_2_);
+  LOG_SENSOR("  ", "Temperature Channel 2", temperature_2_);
 }
 
 void EASEARTDSComponent::update() {
-  this->write_array(URAT_QUERY_COMMAND, sizeof(URAT_QUERY_COMMAND));
-  this->flush();
+  if (current_channel_ == 1) {
+    write_array(CH1_QUERY_CMD, sizeof(CH1_QUERY_CMD));
+    current_channel_ = 2;
+  } else {
+    write_array(CH2_QUERY_CMD, sizeof(CH2_QUERY_CMD));
+    current_channel_ = 1;
+  }
+  flush();
 }
 
 void EASEARTDSComponent::loop() {
-        uint8_t checkcode=0;
-        float source_tds_val=0;
-        float source_temperature_val=0;
-        static int last_read_time=0;
-        // 如果UART缓冲区中有数据，则取出第一个字节
-        while (available() > 0)  
-        {
-            bytes.push_back(read());
-            last_read_time = millis();
-            // ESP_LOGI("TAG", "收到数据：%x",bytes.end()[-1]); 
-            if (bytes[0]!=0x55)//接收到0x55才开始缓存
-            {
-                bytes.clear();
-                continue;
-            }            
-            // 如果UART缓冲区中的数据小于11个字节，则继续循环
-            if (bytes.size() < 11)    
-            {
-                continue;
-            }
-                         
-            // 遍历bytes数组，将每个元素加到校验码变量中
-            for (int i = 0; i < 10; i++)
-            {
-                checkcode+=bytes[i];
-            }
-            // 如果校验码变量不等于bytes数组的第11个元素，则清空bytes数组，并继续循环
-            if (checkcode != bytes[10])
-            {          
-                // ESP_LOGI("TAG", "计算校验码：%x",checkcode); 
-                // ESP_LOGI("TAG", "接收校验码：%x",bytes[10]);   
-                ESP_LOGE("TAG", "校验错误");
-                bytes.clear();
-                continue;
-            }
-            //直接得出的是10倍的参数，在esphome中将其转换正常参数的浮点值
-            source_tds_val = (bytes[5] + bytes[4] * 256)*0.1*0.47; // TDS=电导率*0.47
-            source_temperature_val = (bytes[7] + bytes[6] * 256)*0.1;
-            if (source_tds_val>=0 && source_tds_val<=2000 && source_temperature_val>=0 && source_temperature_val<=99) //电导率(0-2000),温度(0-99)
-            {
-                // 发布shuizhi和wendu的值
-                source_tds_sensor_->publish_state(source_tds_val);
-                temperature_sensor_->publish_state(source_temperature_val); 
-            }
-            // 清空bytes数组
-            bytes.clear();
-        }
-        //如果bytes的长度大于0并且超过1秒没有数据传输，则清空bytes数组
-        if (bytes.size() > 0 && (millis() - last_read_time > 1000))
-        {
-            bytes.clear();
-        }
-}
+  const uint32_t now = millis();
+  static uint32_t last_rx_time = 0;
 
+  while (available()) {
+    uint8_t byte = read();
+    rx_buffer_.push_back(byte);
+    last_rx_time = now;
+
+    // Frame validation
+    if (rx_buffer_.size() == 1 && rx_buffer_[0] != 0x55) {
+      rx_buffer_.clear();
+      continue;
+    }
+
+    // Process complete frame
+    if (rx_buffer_.size() == 11) {
+      uint8_t checksum = 0;
+      for (int i = 0; i < 10; i++) checksum += rx_buffer_[i];
+
+      if (checksum == rx_buffer_[10]) {
+        float tds = (rx_buffer_[5] + rx_buffer_[4] * 256) * 0.1f * 0.47f;
+        float temp = (rx_buffer_[7] + rx_buffer_[6] * 256) * 0.1f;
+
+        if (rx_buffer_[3] == 1) {
+          if (source_tds_1_ != nullptr) source_tds_1_->publish_state(tds);
+          if (temperature_1_ != nullptr) temperature_1_->publish_state(temp);
+        } else {
+          if (source_tds_2_ != nullptr) source_tds_2_->publish_state(tds);
+          if (temperature_2_ != nullptr) temperature_2_->publish_state(temp);
+        }
+      } else {
+        ESP_LOGE(TAG, "Checksum error on channel %d", current_channel_);
+      }
+      rx_buffer_.clear();
+    }
+  }
+
+  // Timeout handling
+  if (!rx_buffer_.empty() && (now - last_rx_time > 1000)) {
+    rx_buffer_.clear();
+  }
+}
 
 }  // namespace easear_tds
 }  // namespace esphome
