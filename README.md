@@ -23,11 +23,19 @@ uart:
   
 sensor:
   - platform: easear_tds
-    source_tds:
+    source_tds_1:
       name: "Source TDS" #自来水TDS
-    temperature:
-      name: "Water Temperature" #水温
-    update_interval: 10s # 可选，更新间隔默认10s
+      accuracy_decimals: 1   
+    temperature_1:
+      name: "Source Temp" #水温
+      accuracy_decimals: 1
+    source_tds_2:
+      name: "Pour TDS" #纯净水TDS
+      accuracy_decimals: 1 
+    temperature_2:
+      name: "Pour Temp" #水温
+      accuracy_decimals: 1
+    update_interval: 5s # 可选，更新间隔默认5s 
 ```
 ## Reference
 
