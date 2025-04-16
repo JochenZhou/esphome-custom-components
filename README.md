@@ -7,6 +7,15 @@ esphome的一些新增组件支持
 external_components:
   - source: github://JochenZhou/esphome-custom-components
     components: [ easear_tds ]
+
+#国内git引用组件库示例
+external_components:
+  - source:
+      type: git
+      url: https://gitee.com/pickcode/esphome-custom-components
+      ref: main    
+    components: [ easear_tds ]
+    refresh : 0s
 ```
 
 ## 组件列表
