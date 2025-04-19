@@ -21,7 +21,10 @@ external_components:
 ## 组件列表
 
 * easear_tds
-> 一款基于urat协议的2路带水温tds检测模块。可输出双路tds及双路水温，目前只配置了一路。
+> 一款基于urat协议的2路带水温tds检测模块。可输出双路tds及双路水温。
+![TDS](https://github.com/user-attachments/assets/283a9b8c-759b-427c-8b14-4b5e06616fcb)
+![微信截图_20250419085517](https://github.com/user-attachments/assets/66a94652-feed-468e-b5fa-db520572574d)
+
 ```yaml
 #配置示例
 uart:
@@ -33,16 +36,16 @@ uart:
 sensor:
   - platform: easear_tds
     source_tds_1:
-      name: "Source TDS" #自来水TDS
+      name: "SourceWater TDS" #自来水TDS
       accuracy_decimals: 1   
     temperature_1:
-      name: "Source Temp" #水温
+      name: "SourceWater Temp" #自来水水温
       accuracy_decimals: 1
     source_tds_2:
-      name: "Pour TDS" #纯净水TDS
+      name: "PourWater TDS" #纯净水TDS
       accuracy_decimals: 1 
     temperature_2:
-      name: "Pour Temp" #水温
+      name: "PourWater Temp" #纯净水水温
       accuracy_decimals: 1
     update_interval: 5s # 可选，更新间隔默认5s 
 ```
